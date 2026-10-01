@@ -130,8 +130,21 @@ def check_updater(policy: dict, updater: pathlib.Path) -> None:
     if not SHA.fullmatch(expected):
         fail("Window release public key fingerprint is missing")
     with tarfile.open(updater / "updater-install.tar.gz", "r:gz") as archive:
-        member = archive.extractfile("updater/release-trust/window.pem")
-        if member is None or hashlib.sha256(member.read()).hexdigest() != expected:
+        try:
+            member = archive.extractfile("updater/release-trust/window.pem")
+        except KeyError:
+            member = None
+        if member is not None:
+            pinned_key = member.read()
+        else:
+            installer = archive.extractfile("updater/install.sh")
+            if installer is None:
+                fail("Published Updater has no signed installer")
+            match = re.search(rb"^window_public_b64='([A-Za-z0-9+/=]+)'$", installer.read(), re.MULTILINE)
+            if not match:
+                fail("Published Updater installer has no embedded Window release key")
+            pinned_key = base64.b64decode(match.group(1), validate=True)
+        if hashlib.sha256(pinned_key).hexdigest() != expected:
             fail("Published Updater does not pin this Window release key")
     bootstrap = (updater / "updater-bootstrap.sh").read_text(encoding="utf-8")
     if f'version="{policy["updater_version"]}"' not in bootstrap:

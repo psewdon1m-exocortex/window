@@ -21,7 +21,7 @@ release URLs. A firewall or proxy failure here blocks installation; retry only
 after the network path is fixed. Use a release-specific `window-bootstrap.sh`
 asset, never a file from `main` or `latest`.
 
-The host must run Updater 0.6.7 or newer with the matching Window public release
+The host must run Updater 0.6.8 or newer with the matching Window public release
 key pinned under `/etc/exocortex/release-trust/window.pem`. If an older Updater
 is installed, update it through its own verified release path first. Do not copy
 a Window key directly into the host trust directory as a workaround.

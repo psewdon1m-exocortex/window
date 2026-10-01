@@ -1,6 +1,6 @@
 # Window
 
-Window is a shared Linux host diagnostic agent managed by Updater 0.6.7 or
+Window is a shared Linux host diagnostic agent managed by Updater 0.6.8 or
 newer. It has no application-service consumer edges. Codex runs only on the
 development PC and connects through the host's existing SSH port. Window
 does not listen on a TCP port and gives the SSH account no Docker socket.
@@ -92,7 +92,7 @@ the same builder with its protected GitHub environment key:
 ```sh
 WINDOW_RELEASE_SIGNING_KEY_FILE=/protected/window.private.pem \
 WINDOW_UPDATER_BOOTSTRAP_FILE=/protected/updater-bootstrap.sh \
-WINDOW_MIN_UPDATER_VERSION=0.6.7 \
+WINDOW_MIN_UPDATER_VERSION=0.6.8 \
 GITHUB_REPOSITORY=OWNER/window \
 bash scripts/build-release.sh 0.0.1 release-artifacts
 ```

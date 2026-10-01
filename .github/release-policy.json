@@ -5,10 +5,10 @@
   "catalog_path": "PART_12_KNOWN_DEPLOYMENT_AND_OPERATIONS_PROBLEMS.md",
   "catalog_sha256": "413cd04e0a7c082a9d1cd3b33236230f4047338321e5f5f44230e8f356c45d65",
   "catalog_ids_sha256": "66650a766bc6f36830fe109ee47d218b973bb93f53295b35dc16a864c36d9bd7",
-  "updater_version": "0.6.7",
+  "updater_version": "0.6.8",
   "window_public_key_sha256": "79cfd299d4aef42633339ea0e03ee8c5086779821367cece6f142a7fa53013e4",
-  "updater_bootstrap_sha256": "",
-  "updater_install_sha256": "",
+  "updater_bootstrap_sha256": "e6aef8208630917f7300778cbf8c9f670e9eb457552b8e5e509c7cd91fd07a14",
+  "updater_install_sha256": "92e6f5f0e2b20b7e34d02890c5e98936676744ca4c245ad3dbde8d06f4a73c79",
   "not_applicable": {
     "no_container_runtime": {
       "ids": ["BST-10", "CTR-01", "CTR-02", "CTR-03", "CTR-04", "CTR-05", "CTR-06", "CTR-07", "CTR-08", "CTR-10", "HLT-12", "PERM-02", "PERM-07", "PERM-12"],
