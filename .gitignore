@@ -1,0 +1,3 @@
+release-artifacts/
+*.private.pem
+.env

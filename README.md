@@ -1,0 +1,96 @@
+# Window
+
+Window is a shared Linux host diagnostic agent managed by Updater 0.6.7 or
+newer. It has no application-service consumer edges. Codex runs only on the
+development PC and connects through the host's existing SSH port. Window
+does not listen on a TCP port and gives the SSH account no Docker socket.
+The [design and applicability record](docs/design.md) maps Window to the
+central `.docs` rules and records the staged producer-redaction decision.
+
+## Operator flow
+
+1. On the development PC, verify the production SSH host-key fingerprint out
+   of band and add it to `known_hosts`. Run `scripts/setup-codex.ps1 -HostName
+   HOST` on Windows. Choose either a one-time password login as an existing
+   server operator with sudo rights, or paste the printed `ssh-ed25519` public
+   key into `sudo updater tui` → Window → Pair development PC. The password
+   method runs `sudo updater window pair` over the existing SSH port; neither
+   the SSH nor sudo password is stored. Codex always uses the dedicated key
+   for later read-only connections.
+
+   For a non-interactive choice of setup method, use
+   `scripts/setup-codex.ps1 -HostName HOST -PairingMethod Password -OperatorUser USER`
+   or `-PairingMethod Tui`. If the server disables SSH password login, use the
+   TUI method. The dedicated `window` SSH account remains key-only.
+2. In the same TUI, choose Open read-only grant and a duration of 1–120
+   minutes. The TUI sends a heartbeat every three seconds. Codex can now call
+   Window's four read-only MCP tools over its **own** SSH connection.
+3. Choose Start observed operator shell to mirror echoed commands and output.
+   The agent polls `window_live_events` during an active Codex turn; it cannot
+   type into the shell. Exit the shell to stop the live feed.
+4. Run `sudo window capture-test smoke -- COMMAND [ARG...]` from that shell to
+   save a bounded result under Window's test sources. The command executes as
+   the original, unprivileged sudo user. Window does not run tests on an MCP
+   request.
+5. Choose Revoke access now to deny new reads. Closing the Updater TUI stops
+   heartbeats. In a normal Termius SSH session, its loss also exits the TUI;
+   data reads fail within 12 seconds even if Codex's separate SSH process
+   remains open. If the TUI is deliberately kept alive in `tmux` or `screen`,
+   closing Termius alone does not close the grant: revoke it or exit the TUI.
+
+The Termius session is the operator control session, not Codex's data
+connection. The SSH host key trusted by Termius is not automatically trusted
+by the development PC's OpenSSH client. Window access starts closed after
+daemon restart and after each new TUI session until explicitly opened.
+
+## Read boundary
+
+`window_sources` lists a fixed set of systemd units, containers whose names
+start with `exocortex-`, and up to 20 retained test results. `window_logs`
+reads one bounded source. `window_updater_jobs` reads the existing sanitized
+Updater operator summary. `window_live_events` reads up to 100 buffered events
+per call. No MCP tool accepts a shell command, path, Docker API request or
+source outside this inventory. Each log request is limited to 200 lines,
+64 KiB of returned text, a 24-hour lookback and a six-second read timeout.
+Test output is limited to 128 KiB at capture and 64 KiB after filtering;
+the most recent 20 results are kept for at most seven days. The audit stores
+only route, status and byte count and rotates at 512 KiB.
+
+Window drops whole lines containing common secret indicators and strips
+terminal control sequences. This is **heuristic**: unknown secret formats in
+existing producer logs or live shell output can still be exposed while the
+grant is open. Treat an active grant as permission to read all registered
+diagnostic sources. Avoid entering credentials in the observed shell.
+
+## Release and installation
+
+Window uses its own RSA-PSS release key, `window-vVERSION` tags and signed
+`window-release-linux-{amd64,arm64}.json` manifests. Updater pins the Window
+public key in its own signed installer, then verifies the exact manifest,
+asset digests, minimum Updater version and running Window health before
+accepting installation or update. Failed activation restores the previous
+binary and unit. If an update is interrupted, TUI Repair restores the prior
+version from `.previous`. Pairing survives a successful update; a grant does not.
+
+To prepare a release, generate a protected RSA key outside the repository,
+publish only its public PEM through `WINDOW_RELEASE_PUBLIC_KEY_FILE` in the
+Updater release build, and create an exact signed Updater bootstrap. Then run:
+
+```sh
+WINDOW_RELEASE_SIGNING_KEY_FILE=/protected/window.private.pem \
+WINDOW_UPDATER_BOOTSTRAP_FILE=/protected/updater-bootstrap.sh \
+WINDOW_MIN_UPDATER_VERSION=0.6.7 \
+GITHUB_REPOSITORY=OWNER/window \
+bash scripts/build-release.sh 0.0.1 release-artifacts
+```
+
+Publish all generated assets under `window-v0.0.1`. Distribute
+`window-bootstrap.sh` through a trusted channel. On a clean host it verifies
+Window's exact signed manifest, downloads the pinned Updater bootstrap if
+needed, checks the Updater-installed Window key and asks Updater to install
+the exact Window version. Normal host operations use Updater TUI.
+
+Production release qualification still needs a host rehearsal with real
+systemd, OpenSSH, Docker and a paired development PC. Workspace tests exercise
+the grant and peer boundaries, source restrictions, MCP client, release
+signatures and Updater integration without changing the production host.

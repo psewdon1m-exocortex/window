@@ -1,0 +1,35 @@
+[Unit]
+Description=Window read-only diagnostic broker
+After=network.target docker.service updater.service
+Wants=docker.service updater.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/window serve
+Restart=on-failure
+RestartSec=3
+User=root
+Group=root
+UMask=0077
+RuntimeDirectory=window window-admin
+RuntimeDirectoryPreserve=yes
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectClock=true
+RestrictSUIDSGID=true
+LockPersonality=true
+RestrictAddressFamilies=AF_UNIX
+ReadWritePaths=/run/window /run/window-admin /var/lib/window /var/lib/window-ssh
+MemoryMax=256M
+TasksMax=64
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=100
+
+[Install]
+WantedBy=multi-user.target

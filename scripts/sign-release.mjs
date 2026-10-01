@@ -1,0 +1,23 @@
+import fs from "node:fs";
+import path from "node:path";
+import { constants, createHash, createPrivateKey, createPublicKey, sign, verify } from "node:crypto";
+
+const [manifest, publicOutput] = process.argv.slice(2);
+const privatePath = process.env.WINDOW_RELEASE_SIGNING_KEY_FILE;
+if (!manifest || !publicOutput || !privatePath) throw new Error("Set WINDOW_RELEASE_SIGNING_KEY_FILE and provide manifest/public-key paths");
+const pem = fs.readFileSync(privatePath);
+const privateKey = createPrivateKey(pem);
+if (privateKey.asymmetricKeyType !== "rsa" || privateKey.asymmetricKeyDetails.modulusLength < 3072) throw new Error("Window release requires RSA 3072 or stronger");
+const publicKey = createPublicKey(privateKey);
+const publicPem = publicKey.export({ type: "spki", format: "pem" });
+const publicDER = publicKey.export({ type: "spki", format: "der" });
+const body = fs.readFileSync(manifest);
+if (body.length > 65536) throw new Error("Window manifest exceeds limit");
+JSON.parse(body.toString("utf8"));
+const signature = sign("sha256", body, { key: privateKey, padding: constants.RSA_PKCS1_PSS_PADDING, saltLength: 32 });
+if (!verify("sha256", body, { key: publicKey, padding: constants.RSA_PKCS1_PSS_PADDING, saltLength: 32 }, signature)) throw new Error("Window signature self-check failed");
+const envelope = { schema: "exocortex.release-signature.v1", algorithm: "RSA-PSS-SHA256", key_id: createHash("sha256").update(publicDER).digest("hex"), signature: signature.toString("base64") };
+fs.writeFileSync(manifest+".sig.json", JSON.stringify(envelope)+"\n", { mode: 0o644 });
+fs.mkdirSync(path.dirname(publicOutput), { recursive: true });
+if (fs.existsSync(publicOutput) && fs.readFileSync(publicOutput, "utf8") !== publicPem) throw new Error("Window release public key differs from existing trust anchor");
+if (!fs.existsSync(publicOutput)) fs.writeFileSync(publicOutput, publicPem, { mode: 0o644 });
