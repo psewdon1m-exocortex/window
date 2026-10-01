@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    name: Linux checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6
+        with:
+          repository: psewdon1m-exocortex/general
+          ref: 65b2f5461a4499243024f4125fb7d4db3df89ad6
+          path: .central-docs
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Validate shell and JavaScript entry points
+        run: |
+          bash -n bootstrap.sh scripts/build-release.sh scripts/fetch-updater.sh
+          node --check scripts/build-bootstrap.mjs
+          node --check scripts/sign-release.mjs
+          python3 -m py_compile scripts/pre-push-gate.py scripts/release-gate.py
+      - name: Lint pinned Part 12 catalog and all Window classifications
+        run: python3 scripts/release-gate.py lint --docs .central-docs
+      - name: Vet
+        run: go vet ./...
+      - name: Test
+        run: go test -count=1 ./...
+      - name: Build Linux targets
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o "$RUNNER_TEMP/window-linux-amd64" ./cmd/window
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -o "$RUNNER_TEMP/window-linux-arm64" ./cmd/window
+
+  windows-setup:
+    name: Windows Codex setup
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - name: Test first-time pairing choices
+        shell: pwsh
+        run: ./scripts/test-setup-codex.ps1
+
+  pre-push-gate:
+    name: Seven-area pre-push gate
+    needs: [linux, windows-setup]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Validate service evidence and outgoing changes
+        env:
+          GATE_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: >-
+          python3 scripts/pre-push-gate.py
+          --upstream-result "${{ needs.linux.result == 'success' && needs.windows-setup.result == 'success' && 'success' || 'failure' }}"
+          --report .pre-push-gate-report.json
+      - name: Preserve gate report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: window-pre-push-gate-${{ github.sha }}
+          path: .pre-push-gate-report.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 14

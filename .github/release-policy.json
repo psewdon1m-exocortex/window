@@ -1,0 +1,56 @@
+{
+  "schema": "exocortex.window.release-policy.v1",
+  "catalog_repository": "https://github.com/psewdon1m-exocortex/general",
+  "catalog_revision": "65b2f5461a4499243024f4125fb7d4db3df89ad6",
+  "catalog_path": "PART_12_KNOWN_DEPLOYMENT_AND_OPERATIONS_PROBLEMS.md",
+  "catalog_sha256": "413cd04e0a7c082a9d1cd3b33236230f4047338321e5f5f44230e8f356c45d65",
+  "catalog_ids_sha256": "66650a766bc6f36830fe109ee47d218b973bb93f53295b35dc16a864c36d9bd7",
+  "updater_version": "0.6.7",
+  "window_public_key_sha256": "79cfd299d4aef42633339ea0e03ee8c5086779821367cece6f142a7fa53013e4",
+  "updater_bootstrap_sha256": "",
+  "updater_install_sha256": "",
+  "not_applicable": {
+    "no_container_runtime": {
+      "ids": ["BST-10", "CTR-01", "CTR-02", "CTR-03", "CTR-04", "CTR-05", "CTR-06", "CTR-07", "CTR-08", "CTR-10", "HLT-12", "PERM-02", "PERM-07", "PERM-12"],
+      "reason": "Window is a host systemd daemon with no OCI image, Compose deployment, container secret mount or application consumer; inspected systemd/window.service and tracked packaging files."
+    },
+    "no_public_web": {
+      "ids": ["HLT-02", "HLT-03", "HLT-05", "HLT-10", "INT-09", "INT-10", "INT-11", "INT-14", "NET-01", "NET-02", "NET-03", "NET-04", "NET-05", "NET-06", "NET-08", "NET-09", "NET-10", "NET-11", "NET-12", "NET-13", "OPS-07", "OPS-11"],
+      "reason": "Window has no web server, public origin, reverse proxy, browser UI, webhook or HTTP upload path; inspected cmd/window and the systemd unit. Its operator UI is Updater TUI."
+    },
+    "no_dashboard_metrics": {
+      "ids": ["HLT-01", "HLT-04", "HLT-06", "HLT-07", "HLT-08"],
+      "reason": "Window publishes no dashboard metrics or remote storage health; its only health contract is the local daemon status checked by Updater."
+    },
+    "no_remote_storage": {
+      "ids": ["DATA-01", "DATA-02", "DATA-03", "DATA-04", "DATA-05", "DATA-06", "DATA-07", "DATA-08", "DATA-09", "DATA-10"],
+      "reason": "Window has no upload, backup scheduler, remote storage credential or restore pipeline. Its bounded local test results are disposable diagnostics, not durable user data."
+    },
+    "no_service_tokens_or_env": {
+      "ids": ["BST-02", "BST-05", "BST-06", "BST-07", "BST-08", "BST-13", "INT-02", "INT-03", "INT-04", "INT-06", "INT-07", "INT-08", "INT-13", "TRUST-02", "TRUST-05", "TRUST-07"],
+      "reason": "Window has no .env schema, application Access Key, SFTP connection, registry secret reference, provider token or machine enrollment. Pairing uses only a public SSH key and existing operator authentication."
+    },
+    "updater_release_ownership": {
+      "ids": ["OPS-08", "PERM-09", "PERM-10", "PERM-11", "PERM-13", "REL-12"],
+      "reason": "These IDs concern Updater's own signed archive, unit sandbox, transaction errors and rollback; Window publishes no Updater package. The Window release gate separately pins and checks an already published compatible Updater release."
+    }
+  },
+  "applicable": {
+    "release_pre_signing": {
+      "ids": ["BST-01", "BST-03", "BST-04", "BST-09", "BST-11", "BST-12", "CTR-09", "INT-12", "INT-15", "OPS-09", "PERM-08", "REL-01", "REL-02", "REL-03", "REL-08", "REL-10", "REL-11", "TRUST-01", "TRUST-03"],
+      "evidence": ["quality-gate CI jobs", "scripts/release-gate.py pre", "scripts/build-release.sh candidate build", "scripts/fetch-updater.sh pinned dependency check"]
+    },
+    "signed_artifact_and_publication": {
+      "ids": ["REL-04", "REL-05", "REL-06", "REL-07", "REL-09", "TRUST-06"],
+      "evidence": ["scripts/release-gate.py final", "release workflow signed artifact verification", "release workflow draft and anonymous download smoke"]
+    },
+    "reader_security": {
+      "ids": ["INT-01", "INT-05", "OPS-05", "PERM-01", "PERM-03", "PERM-04", "PERM-05", "PERM-06", "TRUST-04"],
+      "evidence": ["go test -count=1 ./...", "scripts/test-setup-codex.ps1", "internal/gate/server_test.go", "internal/gate/peer_test.go"]
+    },
+    "operator_readiness": {
+      "ids": ["HLT-09", "HLT-11", "NET-07", "OPS-01", "OPS-02", "OPS-03", "OPS-04", "OPS-06", "OPS-10"],
+      "evidence": ["DEPLOYMENT_READINESS.md runbook validation", "scripts/release-gate.py pre", "Updater Window health and repair contract tests"]
+    }
+  }
+}

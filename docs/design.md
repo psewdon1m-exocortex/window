@@ -9,16 +9,16 @@ runs on the production host.
 
 | Part | Applicability | Window decision |
 | --- | --- | --- |
-| [00](../../.docs/PART_00_SYSTEM_UNIFICATION_SPECIFICATION.md) | Applicable | Separate component, explicit trust boundaries and cross-layer tests. |
+| [00](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_00_SYSTEM_UNIFICATION_SPECIFICATION.md) | Applicable | Separate component, explicit trust boundaries and cross-layer tests. |
 | 01 | N/A | No application web UI. The operator uses the existing Updater TUI. |
-| [02](../../.docs/PART_02_OBSERVABILITY_AUDIT_AND_LOG_EXPORT.md) | Applicable | Bounded log reads, central output filtering and bounded access audit. Existing producer logs are not claimed to be secret-free. |
-| [03](../../.docs/PART_03_BACKUP_AND_RECOVERY.md) | Applicable | Pairing identity is recovery data. Ephemeral leases and live output are deliberately not restored. |
-| [04](../../.docs/PART_04_BOOTSTRAP_AND_DEPLOYMENT.md)–[05](../../.docs/PART_05_CI_RELEASES_AND_LOCAL_UPDATES.md) | Applicable | Own bootstrap, signed release and verified Updater lifecycle are required before production installation. |
-| [06](../../.docs/PART_06_UNIFIED_ACCEPTANCE_CHECKLIST.md)–[07](../../.docs/PART_07_SECURITY_AND_EXPOSURE_CONTROL.md) | Applicable | Pre-push and private exposure checks; no network listener and no arbitrary command/data path. |
+| [02](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_02_OBSERVABILITY_AUDIT_AND_LOG_EXPORT.md) | Applicable | Bounded log reads, central output filtering and bounded access audit. Existing producer logs are not claimed to be secret-free. |
+| [03](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_03_BACKUP_AND_RECOVERY.md) | Applicable | Pairing identity is recovery data. Ephemeral leases and live output are deliberately not restored. |
+| [04](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_04_BOOTSTRAP_AND_DEPLOYMENT.md)–[05](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_05_CI_RELEASES_AND_LOCAL_UPDATES.md) | Applicable | Own bootstrap, signed release and verified Updater lifecycle are required before production installation. |
+| [06](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_06_UNIFIED_ACCEPTANCE_CHECKLIST.md)–[07](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_07_SECURITY_AND_EXPOSURE_CONTROL.md) | Applicable | Pre-push and private exposure checks; no network listener and no arbitrary command/data path. |
 | 08 | N/A | No public or indexable surface. |
-| [09](../../.docs/PART_09_SERVICE_AGENTS_DEPLOYMENT_AND_LIFECYCLE.md)–[10](../../.docs/PART_10_SERVICE_AGENTS_UI_AND_OPERATOR_WORKFLOWS.md) | Applicable | Shared host agent and Updater TUI operator workflow. |
-| [11](../../.docs/PART_11_INITIAL_MULTI_SERVICE_DEPLOYMENT.md)–[12](../../.docs/PART_12_KNOWN_DEPLOYMENT_AND_OPERATIONS_PROBLEMS.md) | Applicable at release | Deployment acceptance and known-problem evidence must be bound to an exact candidate. |
-| [13](../../.docs/PART_13_HOST_DEPENDENCIES_AND_EXTENSION_GUIDE.md) | Applicable | One host singleton, own signing trust and Updater dependency; zero application consumer edges initially. |
+| [09](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_09_SERVICE_AGENTS_DEPLOYMENT_AND_LIFECYCLE.md)–[10](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_10_SERVICE_AGENTS_UI_AND_OPERATOR_WORKFLOWS.md) | Applicable | Shared host agent and Updater TUI operator workflow. |
+| [11](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_11_INITIAL_MULTI_SERVICE_DEPLOYMENT.md)–[12](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_12_KNOWN_DEPLOYMENT_AND_OPERATIONS_PROBLEMS.md) | Applicable at release | Deployment acceptance and known-problem evidence must be bound to an exact candidate. |
+| [13](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_13_HOST_DEPENDENCIES_AND_EXTENSION_GUIDE.md) | Applicable | One host singleton, own signing trust and Updater dependency; zero application consumer edges initially. |
 
 ## Boundary
 
@@ -66,7 +66,7 @@ a live grant owner even after its original Termius transport disconnects.
 
 ## Material divergence: producer redaction is deferred
 
-Applicable guide: [Part 02, §10.2](../../.docs/PART_02_OBSERVABILITY_AUDIT_AND_LOG_EXPORT.md)
+Applicable guide: [Part 02, §10.2](https://github.com/psewdon1m-exocortex/general/blob/65b2f5461a4499243024f4125fb7d4db3df89ad6/PART_02_OBSERVABILITY_AUDIT_AND_LOG_EXPORT.md)
 requires central recursive inspection of structured values and known credential
 patterns before logs reach any sink, and forbids secrets in logs. Part 00 §1
 requires an operator decision for a material difference.

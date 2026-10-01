@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "service": "window",
+  "exposure_modes": ["private", "concealed"],
+  "profiles": {
+    "backup_restore": {
+      "applicable": true,
+      "evidence": ["internal/gate/state.go", "internal/gate/state_test.go", "README.md"]
+    },
+    "service_update": {
+      "applicable": true,
+      "evidence": ["bootstrap.sh", "scripts/build-release.sh", "README.md", "DEPLOYMENT_READINESS.md"]
+    },
+    "internal_documentation": {
+      "applicable": true,
+      "evidence": ["docs/design.md", "README.md"]
+    },
+    "technical_documentation": {
+      "applicable": true,
+      "evidence": ["README.md", "docs/design.md", "DEPLOYMENT_READINESS.md"]
+    },
+    "security": {
+      "applicable": true,
+      "evidence": ["internal/gate/server_test.go", "internal/gate/peer_test.go", "internal/mcpserver/server_test.go"]
+    },
+    "public_seo_geo": {
+      "applicable": false,
+      "reason": "Window has no public web origin or indexable content; it exposes a local socket and an SSH forced command only."
+    },
+    "private_concealed": {
+      "applicable": true,
+      "evidence": ["systemd/window.service", "internal/gate/server_test.go", "docs/design.md"]
+    }
+  }
+}

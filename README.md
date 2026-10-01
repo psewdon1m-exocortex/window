@@ -64,6 +64,19 @@ diagnostic sources. Avoid entering credentials in the observed shell.
 
 ## Release and installation
 
+GitHub Actions runs verification on pushes to `main`, pull requests and plain
+`vVERSION` validation tags. The same checks can be started manually. CI vets
+and tests the Go code, checks shell and JavaScript syntax, builds both Linux
+targets, lints the pinned Part 12 catalog, checks all seven pre-push areas and
+tests the Windows Codex pairing flow. It does not receive release signing keys
+or publish artifacts. An exact `window-vVERSION` tag starts the separate
+release workflow only after the same CI passes. That workflow checks the
+published Updater dependency, builds a candidate, completes the Part 12 gate,
+signs inside the restricted `release` environment, compares the signed build
+against the candidate, and anonymously downloads every published asset before
+attaching the final evidence report. See [deployment readiness](DEPLOYMENT_READINESS.md)
+for the separate production-host rehearsal.
+
 Window uses its own RSA-PSS release key, `window-vVERSION` tags and signed
 `window-release-linux-{amd64,arm64}.json` manifests. Updater pins the Window
 public key in its own signed installer, then verifies the exact manifest,
@@ -72,9 +85,9 @@ accepting installation or update. Failed activation restores the previous
 binary and unit. If an update is interrupted, TUI Repair restores the prior
 version from `.previous`. Pairing survives a successful update; a grant does not.
 
-To prepare a release, generate a protected RSA key outside the repository,
-publish only its public PEM through `WINDOW_RELEASE_PUBLIC_KEY_FILE` in the
-Updater release build, and create an exact signed Updater bootstrap. Then run:
+For a local rehearsal, supply a protected RSA key outside the repository and
+the exact, previously published Updater bootstrap. The release workflow uses
+the same builder with its protected GitHub environment key:
 
 ```sh
 WINDOW_RELEASE_SIGNING_KEY_FILE=/protected/window.private.pem \
@@ -84,8 +97,9 @@ GITHUB_REPOSITORY=OWNER/window \
 bash scripts/build-release.sh 0.0.1 release-artifacts
 ```
 
-Publish all generated assets under `window-v0.0.1`. Distribute
-`window-bootstrap.sh` through a trusted channel. On a clean host it verifies
+The workflow publishes all generated assets under the immutable tag and keeps
+that release out of `latest` discovery. Distribute `window-bootstrap.sh` from
+that exact release URL. On a clean host it verifies
 Window's exact signed manifest, downloads the pinned Updater bootstrap if
 needed, checks the Updater-installed Window key and asks Updater to install
 the exact Window version. Normal host operations use Updater TUI.
