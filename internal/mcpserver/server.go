@@ -96,6 +96,11 @@ func Run(ctx context.Context, socket string) error {
 			data, err := client.request(ctx, "GET", "/v1/jobs", nil)
 			return result(data, err)
 		})
+	mcp.AddTool(server, &mcp.Tool{Name: "window_storage", Description: "Read root filesystem usage and a cached Docker storage summary. Docker accounting may initially be pending; call again later. Read-only.", Annotations: annotation},
+		func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, any, error) {
+			data, err := client.request(ctx, "GET", "/v1/storage", nil)
+			return result(data, err)
+		})
 	type liveInput struct {
 		After uint64 `json:"after" jsonschema:"Last event ID already seen, or zero to begin"`
 	}

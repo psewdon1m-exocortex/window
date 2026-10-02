@@ -43,7 +43,10 @@ if (-not $PairingMethod) {
 }
 
 if ($PairingMethod -eq 'Password') {
-    if (-not $OperatorUser) { $OperatorUser = Read-Host 'Existing server operator username (with sudo rights)' }
+    if (-not $OperatorUser) {
+        $OperatorUser = Read-Host 'Server Window operator username [windowops]'
+        if (-not $OperatorUser) { $OperatorUser = 'windowops' }
+    }
     if ($OperatorUser -notmatch '^[A-Za-z_][A-Za-z0-9_.-]*$') { throw 'Enter a valid server operator username.' }
     Write-Host 'OpenSSH will prompt for the server password; sudo may prompt again. Neither password is stored by this script.'
     $pairArguments = @('-tt', '-p', [string]$Port,
@@ -53,7 +56,7 @@ if ($PairingMethod -eq 'Password') {
         "$OperatorUser@$HostName", 'sudo', '/usr/bin/updater', 'window', 'pair', '--key-base64', $keyBlob)
     & $ssh.Source @pairArguments
     if ($LASTEXITCODE -ne 0) {
-        throw 'Window pairing failed. Check server password authentication, sudo rights, and that Window is installed. You can rerun with -PairingMethod Tui.'
+        throw 'Window pairing failed. Check that windowops has a login password or SSH key, the restricted sudoers rule is installed, and Window is installed. You can rerun with -PairingMethod Tui.'
     }
 }
 
@@ -72,7 +75,7 @@ if ($codex) {
     Write-Host "Arguments: $($arguments -join ' ')"
 }
 if ($PairingMethod -eq 'Tui') {
-    Write-Host 'Paste this public key into Updater TUI > Window > Pair development PC:'
+    Write-Host 'Paste this public key into sudo updater tui --window-only > Pair development PC:'
     Write-Output $publicKey
 } else {
     Write-Host 'Pairing complete. Open the timed Window grant in Updater TUI when needed.'

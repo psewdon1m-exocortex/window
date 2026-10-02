@@ -47,6 +47,8 @@ func TestActualStdioMCPClientAndRevocation(t *testing.T) {
 			_, _ = w.Write([]byte(`{"source":"unit:updater.service","lines":["PASS"]}`))
 		case "/v1/jobs":
 			_, _ = w.Write([]byte(`{"jobs":[]}`))
+		case "/v1/storage":
+			_, _ = w.Write([]byte(`{"docker_status":"ready","root":{"total_bytes":1024}}`))
 		case "/v1/live":
 			_, _ = w.Write([]byte(`{"events":[],"live":false}`))
 		default:
@@ -69,7 +71,7 @@ func TestActualStdioMCPClientAndRevocation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(tools.Tools) != 4 {
+	if len(tools.Tools) != 5 {
 		t.Fatalf("unexpected tool inventory: %d", len(tools.Tools))
 	}
 	for _, tool := range tools.Tools {
@@ -84,6 +86,10 @@ func TestActualStdioMCPClientAndRevocation(t *testing.T) {
 	logs, err := session.CallTool(ctx, &mcp.CallToolParams{Name: "window_logs", Arguments: map[string]any{"source": "unit:updater.service", "since_minutes": 60, "lines": 10}})
 	if err != nil || logs.IsError {
 		t.Fatalf("logs failed: %+v %v", logs, err)
+	}
+	storage, err := session.CallTool(ctx, &mcp.CallToolParams{Name: "window_storage"})
+	if err != nil || storage.IsError || len(storage.Content) != 1 {
+		t.Fatalf("storage failed: %+v %v", storage, err)
 	}
 	closed.Store(true)
 	denied, err := session.CallTool(ctx, &mcp.CallToolParams{Name: "window_updater_jobs"})

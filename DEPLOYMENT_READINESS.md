@@ -21,8 +21,10 @@ release URLs. A firewall or proxy failure here blocks installation; retry only
 after the network path is fixed. Use a release-specific `window-bootstrap.sh`
 asset, never a file from `main` or `latest`.
 
-The host must run Updater 0.6.8 or newer with the matching Window public release
-key pinned under `/etc/exocortex/release-trust/window.pem`. If an older Updater
+The host must run published Updater 0.6.11 or newer with the matching Window
+public release key pinned under `/etc/exocortex/release-trust/window.pem`.
+Window's release policy pins the verified Updater 0.6.11 bootstrap and install
+archive. If an older Updater
 is installed, update it through its own verified release path first. Do not copy
 a Window key directly into the host trust directory as a workaround.
 
@@ -39,8 +41,9 @@ sudo journalctl -u window -n 50 --no-pager -o short-iso
 `systemctl restart` alone is not readiness evidence. Check the running version,
 process state and Updater TUI Window status after activation. Verify that an
 unpaired or closed grant denies data reads. Pair the development PC through
-`scripts/setup-codex.ps1`, then open a short grant in `sudo updater tui` and
-exercise `window_sources` and `window_updater_jobs` from Codex. Revoke it in the
+`scripts/setup-codex.ps1`, then log in as `windowops` and open a short grant in
+`sudo /usr/bin/updater tui --window-only`. Exercise `window_sources` and
+`window_updater_jobs` from Codex. Revoke it in the
 TUI and verify the next read is denied. No Codex agent runs on the host.
 
 For a failed install or update, inspect the specific Updater job and Window

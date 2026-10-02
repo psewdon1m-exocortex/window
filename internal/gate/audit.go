@@ -103,7 +103,7 @@ func (s *Server) audited(role string, next http.Handler) http.Handler {
 
 func auditRoute(path string) string {
 	switch path {
-	case "/v1/status", "/v1/health", "/v1/pair", "/v1/open", "/v1/heartbeat", "/v1/revoke", "/v1/close", "/v1/live/start", "/v1/live/append", "/v1/live/stop", "/v1/sources", "/v1/logs", "/v1/jobs", "/v1/live":
+	case "/v1/status", "/v1/health", "/v1/pair", "/v1/open", "/v1/heartbeat", "/v1/revoke", "/v1/close", "/v1/live/start", "/v1/live/append", "/v1/live/stop", "/v1/sources", "/v1/logs", "/v1/jobs", "/v1/live", "/v1/storage":
 		return path
 	default:
 		return "unknown"

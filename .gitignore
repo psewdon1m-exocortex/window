@@ -2,3 +2,4 @@ release-artifacts/
 *.private.pem
 .env
 __pycache__/
+/window

@@ -5,7 +5,7 @@ version="${1:?exact stable version required}"
 output="${2:-release-artifacts}"
 [[ "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]] || { echo 'Use a stable version' >&2; exit 2; }
 [[ "${WINDOW_MIN_UPDATER_VERSION:-}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Set WINDOW_MIN_UPDATER_VERSION' >&2; exit 2; }
-[[ "$(printf '%s\n%s\n' 0.6.8 "$WINDOW_MIN_UPDATER_VERSION" | sort -V | head -1)" = 0.6.8 ]] || { echo 'Window requires Updater 0.6.8 or newer' >&2; exit 2; }
+[[ "$(printf '%s\n%s\n' 0.6.10 "$WINDOW_MIN_UPDATER_VERSION" | sort -V | head -1)" = 0.6.10 && "$WINDOW_MIN_UPDATER_VERSION" != 0.6.10 ]] || { echo 'The restricted Window operator TUI requires a published Updater newer than 0.6.10' >&2; exit 2; }
 [[ "${GITHUB_REPOSITORY:-}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]] || { echo 'Set GITHUB_REPOSITORY=owner/repo' >&2; exit 2; }
 : "${WINDOW_RELEASE_SIGNING_KEY_FILE:?Set the protected Window release signing key file}"
 : "${WINDOW_UPDATER_BOOTSTRAP_FILE:?Set the exact signed Updater bootstrap file}"

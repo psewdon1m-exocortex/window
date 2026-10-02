@@ -1,7 +1,8 @@
 # Window
 
-Window is a shared Linux host diagnostic agent managed by Updater 0.6.8 or
-newer. It has no application-service consumer edges. Codex runs only on the
+Window is a shared Linux host diagnostic agent managed by Updater. This source
+requires Updater 0.6.11 or newer for its restricted operator TUI.
+It has no application-service consumer edges. Codex runs only on the
 development PC and connects through the host's existing SSH port. Window
 does not listen on a TCP port and gives the SSH account no Docker socket.
 The [design and applicability record](docs/design.md) maps Window to the
@@ -9,22 +10,31 @@ central `.docs` rules and records the staged producer-redaction decision.
 
 ## Operator flow
 
+The root installer creates `windowops` for the interactive SSH session and a
+restricted sudoers rule for Window controls. It does not create a login
+credential. On a new host, root must set `passwd windowops` or add the
+operator's SSH public key to `/home/windowops/.ssh/authorized_keys` with
+`windowops` ownership and mode `0600` (directory mode `0700`). Existing
+`windowops` credentials are preserved. Log in through Termius as `windowops`
+and run `sudo /usr/bin/updater tui --window-only`. The technical `window`
+account remains separate and accepts only the paired MCP key.
+
 1. On the development PC, verify the production SSH host-key fingerprint out
    of band and add it to `known_hosts`. Run `scripts/setup-codex.ps1 -HostName
    HOST` on Windows. Choose either a one-time password login as an existing
    server operator with sudo rights, or paste the printed `ssh-ed25519` public
-   key into `sudo updater tui` → Window → Pair development PC. The password
+   key into `sudo /usr/bin/updater tui --window-only` → Pair development PC. The password
    method runs `sudo updater window pair` over the existing SSH port; neither
    the SSH nor sudo password is stored. Codex always uses the dedicated key
    for later read-only connections.
 
    For a non-interactive choice of setup method, use
-   `scripts/setup-codex.ps1 -HostName HOST -PairingMethod Password -OperatorUser USER`
+   `scripts/setup-codex.ps1 -HostName HOST -PairingMethod Password -OperatorUser windowops`
    or `-PairingMethod Tui`. If the server disables SSH password login, use the
    TUI method. The dedicated `window` SSH account remains key-only.
 2. In the same TUI, choose Open read-only grant and a duration of 1–120
    minutes. The TUI sends a heartbeat every three seconds. Codex can now call
-   Window's four read-only MCP tools over its **own** SSH connection.
+   Window's five read-only MCP tools over its **own** SSH connection.
 3. Choose Start observed operator shell to mirror echoed commands and output.
    The agent polls `window_live_events` during an active Codex turn; it cannot
    type into the shell. Exit the shell to stop the live feed.
@@ -43,13 +53,22 @@ connection. The SSH host key trusted by Termius is not automatically trusted
 by the development PC's OpenSSH client. Window access starts closed after
 daemon restart and after each new TUI session until explicitly opened.
 
+If **Check for releases** reports Kernel HTTP 403, verify that Updater's host
+machine principal in Kernel is allowed to resolve `repositories.window.url`.
+The saved Window repository in TUI is a fallback for an unavailable Kernel;
+an explicit authorization denial requires correcting the Kernel principal.
+
 ## Read boundary
 
 `window_sources` lists a fixed set of systemd units, containers whose names
 start with `exocortex-`, and up to 20 retained test results. `window_logs`
 reads one bounded source. `window_updater_jobs` reads the existing sanitized
 Updater operator summary. `window_live_events` reads up to 100 buffered events
-per call. No MCP tool accepts a shell command, path, Docker API request or
+per call. `window_storage` reports root filesystem space, the current syslog
+file size, and a cached Docker `system df` summary. The first request may say
+`pending` while Docker computes usage; ask again later. The summary refreshes
+after five minutes and may say `unavailable` if Docker cannot answer. No MCP
+tool accepts a shell command, path, Docker API request or
 source outside this inventory. Each log request is limited to 200 lines,
 64 KiB of returned text, a 24-hour lookback and a six-second read timeout.
 Test output is limited to 128 KiB at capture and 64 KiB after filtering;
@@ -92,7 +111,7 @@ the same builder with its protected GitHub environment key:
 ```sh
 WINDOW_RELEASE_SIGNING_KEY_FILE=/protected/window.private.pem \
 WINDOW_UPDATER_BOOTSTRAP_FILE=/protected/updater-bootstrap.sh \
-WINDOW_MIN_UPDATER_VERSION=0.6.8 \
+WINDOW_MIN_UPDATER_VERSION="$PUBLISHED_UPDATER_VERSION" \
 GITHUB_REPOSITORY=OWNER/window \
 bash scripts/build-release.sh 0.0.1 release-artifacts
 ```

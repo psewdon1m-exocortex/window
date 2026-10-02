@@ -30,18 +30,20 @@ type Job struct {
 }
 
 type Server struct {
-	Version       string
-	Audit         *Audit
-	rateMu        sync.Mutex
-	rateAt        time.Time
-	rateTokens    float64
-	State         *State
-	Reader        Reader
-	ClientUID     uint32
-	AdminSocket   string
-	ClientSocket  string
-	UpdaterSocket string
-	JobsProvider  func(context.Context) ([]Job, error)
+	Version         string
+	Audit           *Audit
+	rateMu          sync.Mutex
+	rateAt          time.Time
+	rateTokens      float64
+	State           *State
+	Reader          Reader
+	ClientUID       uint32
+	AdminSocket     string
+	ClientSocket    string
+	UpdaterSocket   string
+	JobsProvider    func(context.Context) ([]Job, error)
+	StorageProvider func(context.Context) ([]DockerUsage, error)
+	storageCache    storageCache
 }
 
 type peerListener struct {
@@ -272,6 +274,17 @@ func (s *Server) AdminHandler() http.Handler {
 
 func (s *Server) ClientHandler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /v1/storage", func(w http.ResponseWriter, r *http.Request) {
+		if !s.allowed(w) {
+			return
+		}
+		report, err := s.storage(r.Context())
+		if err != nil {
+			failure(w, 503, err.Error())
+			return
+		}
+		s.respondAllowed(w, report)
+	})
 	mux.HandleFunc("GET /v1/sources", func(w http.ResponseWriter, r *http.Request) {
 		if !s.allowed(w) {
 			return

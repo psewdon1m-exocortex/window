@@ -9,9 +9,9 @@ public_key_b64="__WINDOW_PUBLIC_KEY_BASE64__"
 case "$(uname -m)" in x86_64) arch=amd64 ;; aarch64) arch=arm64 ;; *) echo 'Unsupported Window architecture' >&2; exit 1 ;; esac
 if command -v apt-get >/dev/null 2>&1; then
   apt-get update
-  DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl openssl python3
+  DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl openssl python3 sudo
 fi
-for command in curl openssl python3; do command -v "$command" >/dev/null 2>&1 || { echo "$command is required" >&2; exit 1; }; done
+for command in curl openssl python3 visudo; do command -v "$command" >/dev/null 2>&1 || { echo "$command is required" >&2; exit 1; }; done
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT HUP INT TERM
 printf '%s' "$public_key_b64" | openssl base64 -d -A > "$work/window.pem"
@@ -55,6 +55,25 @@ trust=/etc/exocortex/release-trust/window.pem
 [ -f "$trust" ] && [ ! -L "$trust" ] && cmp -s "$trust" "$work/window.pem" || { echo 'Updater has no matching pinned Window release key' >&2; exit 1; }
 minimum="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["minimum_updater"])' "$manifest")"
 dpkg --compare-versions "$(/usr/bin/updater version)" ge "$minimum" || { echo 'Updater is too old for this Window release' >&2; exit 1; }
+/usr/bin/updater tui --help 2>&1 | grep -Fq -- '-window-only' || { echo 'Updater does not support the restricted Window operator TUI; upgrade Updater first' >&2; exit 1; }
+id windowops >/dev/null 2>&1 || useradd --create-home --user-group --shell /bin/bash --password '!' windowops
+[ "$(getent passwd windowops | cut -d: -f6-7)" = '/home/windowops:/bin/bash' ] || { echo 'Window operator account must use /home/windowops and /bin/bash.' >&2; exit 1; }
+[ "$(id -gn windowops)" = windowops ] || { echo 'Window operator primary group must be windowops.' >&2; exit 1; }
+[ "$(id -u windowops)" -ne 0 ] || { echo 'Window operator account must not be root.' >&2; exit 1; }
+for privileged_group in root sudo wheel docker lxd updater window; do
+  case " $(id -nG windowops) " in *" $privileged_group "*) echo "Remove windowops from privileged group $privileged_group." >&2; exit 1 ;; esac
+done
+[ ! -L /home/windowops ] || { echo 'Window operator home must not be a symlink.' >&2; exit 1; }
+install -d -o windowops -g windowops -m 0700 /home/windowops
+install -d -o root -g root -m 0755 /etc/sudoers.d
+[ ! -L /etc/sudoers.d/windowops ] || { echo 'Window operator sudoers file must not be a symlink.' >&2; exit 1; }
+windowops_sudoers="$(mktemp /etc/sudoers.d/.windowops.XXXXXX)"
+printf '%s\n' 'windowops ALL=(root) NOPASSWD: /usr/bin/updater tui --window-only, /usr/bin/updater window pair --key-base64 *, /usr/local/bin/window capture-test *' > "$windowops_sudoers"
+chmod 0440 "$windowops_sudoers"
+visudo -cf "$windowops_sudoers" >/dev/null || { rm -f "$windowops_sudoers"; exit 1; }
+mv -f "$windowops_sudoers" /etc/sudoers.d/windowops
+visudo -c >/dev/null
 /usr/bin/updater host seed-source window "https://github.com/$repository"
 /usr/bin/updater window install --version "$version"
-printf '%s\n' "Window $version installed with access closed. Manage pairing and grants through sudo updater tui."
+printf '%s\n' "Window $version installed with access closed. Log in as windowops and run sudo /usr/bin/updater tui --window-only."
+printf '%s\n' 'For a new windowops account, set its login password with passwd windowops or install an SSH public key.'

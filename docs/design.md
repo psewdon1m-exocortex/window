@@ -23,12 +23,12 @@ runs on the production host.
 ## Boundary
 
 ```text
-Termius -> root Updater TUI -> root Updater operator socket -> Window admin socket
+Termius as windowops -> sudo Updater Window-only TUI -> root Updater operator socket -> Window admin socket
 Codex on paired PC -> dedicated SSH key -> forced `window mcp` -> Window reader socket
 Window -> fixed journal units / Exocortex Docker containers / test results / sanitized Updater jobs
 ```
 
-Initial pairing has two operator paths: paste the public key in the root TUI,
+Initial pairing has two operator paths: paste the public key in the restricted TUI,
 or use an existing operator's password-authenticated SSH session to run the
 root Updater pairing command once. The setup helper never reads or stores that
 password; OpenSSH and, if required, sudo prompt for it. Both paths install the
