@@ -36,6 +36,7 @@ jobs:
           node --check scripts/build-bootstrap.mjs
           node --check scripts/sign-release.mjs
           python3 -m py_compile scripts/pre-push-gate.py scripts/release-gate.py
+          python3 scripts/test-bootstrap-password.py
       - name: Lint pinned Part 12 catalog and all Window classifications
         run: python3 scripts/release-gate.py lint --docs .central-docs
       - name: Vet

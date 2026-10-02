@@ -1,7 +1,7 @@
 # Window
 
 Window is a shared Linux host diagnostic agent managed by Updater. This source
-requires Updater 0.6.11 or newer for its restricted operator TUI.
+requires Updater 0.6.12 or newer for its restricted operator TUI.
 It has no application-service consumer edges. Codex runs only on the
 development PC and connects through the host's existing SSH port. Window
 does not listen on a TCP port and gives the SSH account no Docker socket.
@@ -11,19 +11,23 @@ central `.docs` rules and records the staged producer-redaction decision.
 ## Operator flow
 
 The root installer creates `windowops` for the interactive SSH session and a
-restricted sudoers rule for Window controls. It does not create a login
-credential. On a new host, root must set `passwd windowops` or add the
-operator's SSH public key to `/home/windowops/.ssh/authorized_keys` with
-`windowops` ownership and mode `0600` (directory mode `0700`). Existing
-`windowops` credentials are preserved. Log in through Termius as `windowops`
-and run `sudo /usr/bin/updater tui --window-only`. The technical `window`
-account remains separate and accepts only the paired MCP key.
+restricted sudoers rule for Window controls. On the first Window installation,
+if `windowops` has neither a password nor an SSH public key, the bootstrap asks
+for a password through `passwd` on the operator's terminal. It never receives
+or stores the password itself. An unattended first installation without either
+credential stops before installing Window; add a public key first or run the
+bootstrap from an interactive terminal. Existing credentials survive updates.
+For key login, put the operator's public key in
+`/home/windowops/.ssh/authorized_keys` with `windowops` ownership and mode
+`0600` (directory mode `0700`). Log in through Termius as `windowops` and run
+`sudo /usr/bin/updater tui -window`. The technical `window` account remains
+separate and accepts only the paired MCP key.
 
 1. On the development PC, verify the production SSH host-key fingerprint out
    of band and add it to `known_hosts`. Run `scripts/setup-codex.ps1 -HostName
    HOST` on Windows. Choose either a one-time password login as an existing
    server operator with sudo rights, or paste the printed `ssh-ed25519` public
-   key into `sudo /usr/bin/updater tui --window-only` → Pair development PC. The password
+   key into `sudo /usr/bin/updater tui -window` → Pair development PC. The password
    method runs `sudo updater window pair` over the existing SSH port; neither
    the SSH nor sudo password is stored. Codex always uses the dedicated key
    for later read-only connections.

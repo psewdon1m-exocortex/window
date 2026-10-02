@@ -55,7 +55,7 @@ jobs:
           openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:3072 -out "$candidate_key" 2>/dev/null
           export WINDOW_RELEASE_SIGNING_KEY_FILE="$candidate_key"
           export WINDOW_UPDATER_BOOTSTRAP_FILE="$RUNNER_TEMP/pinned-updater/updater-bootstrap.sh"
-          export WINDOW_MIN_UPDATER_VERSION=0.6.11
+          export WINDOW_MIN_UPDATER_VERSION=0.6.12
           bash scripts/build-release.sh "${GITHUB_REF_NAME#window-v}" candidate-artifacts
           (cd candidate-artifacts && sha256sum window-linux-amd64 window-linux-arm64 window.service updater-bootstrap.sh) > candidate.sha256
       - name: Evaluate Part 12 before release credentials are available
@@ -124,7 +124,7 @@ jobs:
           printf '%s\n' "$WINDOW_RELEASE_SIGNING_KEY" > "$key_file"
           export WINDOW_RELEASE_SIGNING_KEY_FILE="$key_file"
           export WINDOW_UPDATER_BOOTSTRAP_FILE="$RUNNER_TEMP/pinned-updater/updater-bootstrap.sh"
-          export WINDOW_MIN_UPDATER_VERSION=0.6.11
+          export WINDOW_MIN_UPDATER_VERSION=0.6.12
           bash scripts/build-release.sh "${GITHUB_REF_NAME#window-v}" release-artifacts
           (cd release-artifacts && sha256sum --check ../candidate.sha256)
           (cd release-artifacts && sha256sum window-linux-amd64 window-linux-arm64 window.service \

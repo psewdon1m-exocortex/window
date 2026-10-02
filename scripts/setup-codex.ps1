@@ -75,7 +75,7 @@ if ($codex) {
     Write-Host "Arguments: $($arguments -join ' ')"
 }
 if ($PairingMethod -eq 'Tui') {
-    Write-Host 'Paste this public key into sudo updater tui --window-only > Pair development PC:'
+    Write-Host 'Paste this public key into sudo updater tui -window > Pair development PC:'
     Write-Output $publicKey
 } else {
     Write-Host 'Pairing complete. Open the timed Window grant in Updater TUI when needed.'

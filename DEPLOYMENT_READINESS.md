@@ -21,12 +21,19 @@ release URLs. A firewall or proxy failure here blocks installation; retry only
 after the network path is fixed. Use a release-specific `window-bootstrap.sh`
 asset, never a file from `main` or `latest`.
 
-The host must run published Updater 0.6.11 or newer with the matching Window
+The host must run published Updater 0.6.12 or newer with the matching Window
 public release key pinned under `/etc/exocortex/release-trust/window.pem`.
-Window's release policy pins the verified Updater 0.6.11 bootstrap and install
+Window's release policy pins the verified Updater 0.6.12 bootstrap and install
 archive. If an older Updater
 is installed, update it through its own verified release path first. Do not copy
 a Window key directly into the host trust directory as a workaround.
+
+On a first Window installation, use an interactive root terminal to set the
+`windowops` password when prompted. If `windowops` already has a password or
+an SSH public key, the bootstrap preserves it and does not prompt. An
+unattended first installation without either credential stops before Window
+is installed. The Updater installer may have already created the account with
+a locked password; Window's bootstrap still prompts in that case.
 
 ## After installation
 
@@ -42,7 +49,7 @@ sudo journalctl -u window -n 50 --no-pager -o short-iso
 process state and Updater TUI Window status after activation. Verify that an
 unpaired or closed grant denies data reads. Pair the development PC through
 `scripts/setup-codex.ps1`, then log in as `windowops` and open a short grant in
-`sudo /usr/bin/updater tui --window-only`. Exercise `window_sources` and
+`sudo /usr/bin/updater tui -window`. Exercise `window_sources` and
 `window_updater_jobs` from Codex. Revoke it in the
 TUI and verify the next read is denied. No Codex agent runs on the host.
 
