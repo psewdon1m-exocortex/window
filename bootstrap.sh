@@ -87,7 +87,7 @@ ensure_windowops_password /usr/local/bin/window /home/windowops/.ssh/authorized_
 install -d -o root -g root -m 0755 /etc/sudoers.d
 [ ! -L /etc/sudoers.d/windowops ] || { echo 'Window operator sudoers file must not be a symlink.' >&2; exit 1; }
 windowops_sudoers="$(mktemp /etc/sudoers.d/.windowops.XXXXXX)"
-printf '%s\n' 'windowops ALL=(root) NOPASSWD: /usr/bin/updater tui -window, /usr/bin/updater window pair --key-base64 *, /usr/local/bin/window capture-test *' > "$windowops_sudoers"
+printf '%s\n' 'windowops ALL=(root) NOPASSWD: /usr/bin/updater tui -window, /usr/bin/updater window pair --key-base64 *, /usr/local/bin/window capture-test *, /usr/local/bin/window diagnose *' > "$windowops_sudoers"
 chmod 0440 "$windowops_sudoers"
 visudo -cf "$windowops_sudoers" >/dev/null || { rm -f "$windowops_sudoers"; exit 1; }
 mv -f "$windowops_sudoers" /etc/sudoers.d/windowops

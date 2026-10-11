@@ -5,10 +5,10 @@
   "catalog_path": "PART_12_KNOWN_DEPLOYMENT_AND_OPERATIONS_PROBLEMS.md",
   "catalog_sha256": "413cd04e0a7c082a9d1cd3b33236230f4047338321e5f5f44230e8f356c45d65",
   "catalog_ids_sha256": "66650a766bc6f36830fe109ee47d218b973bb93f53295b35dc16a864c36d9bd7",
-  "updater_version": "0.6.12",
+  "updater_version": "0.6.17",
   "window_public_key_sha256": "79cfd299d4aef42633339ea0e03ee8c5086779821367cece6f142a7fa53013e4",
-  "updater_bootstrap_sha256": "d3b673e09463fb4d20ee5c7efa2ad364d497a5e3ca87c854ecbc252fedd2f8f9",
-  "updater_install_sha256": "58dc548a862d5ba7e43536dcf5176ec12f76631770ec1eef49f11e9ddca0950f",
+  "updater_bootstrap_sha256": "93c91c9aef38071075ea053200d4cb489d4c05c8d8c49f46722de518c7756b8f",
+  "updater_install_sha256": "22233870ebf7e8cd41628ba403d383d1c98d0d68966822ad823ff4bc1c13dab6",
   "not_applicable": {
     "no_container_runtime": {
       "ids": ["BST-10", "CTR-01", "CTR-02", "CTR-03", "CTR-04", "CTR-05", "CTR-06", "CTR-07", "CTR-08", "CTR-10", "HLT-12", "PERM-02", "PERM-07", "PERM-12"],

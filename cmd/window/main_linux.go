@@ -49,10 +49,13 @@ func main() {
 
 func run(args []string) error {
 	if len(args) == 0 {
-		return errors.New("usage: window serve|mcp|observe|capture-test|version")
+		return errors.New("usage: window serve|mcp|observe|capture-test|diagnose|version")
 	}
 	if args[0] == "capture-test" {
 		return captureTest(args[1:])
+	}
+	if args[0] == "diagnose" {
+		return diagnose(args[1:])
 	}
 	if len(args) != 1 {
 		return errors.New("unexpected Window arguments")

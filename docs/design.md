@@ -22,6 +22,15 @@ runs on the production host.
 
 ## Boundary
 
+Window identity recovery is implemented by Updater's independently encrypted
+`window` scope. It captures only the canonical public forced-command pairing,
+or an explicit empty identity. Root-confirmed restore replaces that pairing,
+verifies its fingerprint and starts Window with access closed. Leases and live
+output remain excluded. Audit/test results and SSH operator credentials are
+also excluded. The restricted `windowops` console has no recovery import or
+key-export capability. See Updater's `docs/WINDOW_RECOVERY.md` for the workflow
+and local qualification; no production deployment is implied.
+
 ```text
 Termius as windowops -> sudo Updater Window-only TUI -> root Updater operator socket -> Window admin socket
 Codex on paired PC -> dedicated SSH key -> forced `window mcp` -> Window reader socket
@@ -44,8 +53,9 @@ heartbeat closes the grant within 12 seconds. Duration is 1–120 minutes.
 
 No user-controlled path, unit name, container ID, Docker API method, shell
 command, environment variable or filename reaches a reader. Sources are
-discovered from a fixed unit list and Docker container names with the exact
-`exocortex-` prefix. The reader invokes only `journalctl` and `docker logs` with
+discovered from a fixed unit list, `exocortex-*` containers and the named
+`vault-prod` API, worker, web, PostgreSQL and migration services. The reader
+invokes only `journalctl` and `docker logs` with
 fixed argument positions, bounded output, tail, lookback and timeout. Window
 never passes Docker's socket to the paired SSH process. An audit records request
 metadata and byte counts, never full returned log lines. Every output line is
@@ -59,6 +69,11 @@ starts only from the Window section of the TUI and mirrors a newly launched
 operator shell's output. The MCP inventory exposes no input or execution tool.
 The live feed is bounded and volatile; it ends with the observed shell or grant.
 Codex sees new events only when it calls the polling tool during an active turn.
+The separate `window diagnose` operator command uses fixed Docker read plans,
+sanitized Updater job summaries and one fixed read-only PostgreSQL migration
+query. It requires `windowops` via sudo, a live observed shell and an open
+grant before and after each bounded operation. It never grants Docker socket
+access to `windowops` or exposes arbitrary `docker exec` / SQL.
 The operator's Termius SSH session and Codex's independent SSH process are
 different transports; a lost TUI closes the *data grant*, not necessarily
 Codex's already-open transport. A TUI kept alive by `tmux` or `screen` remains

@@ -18,7 +18,12 @@ import (
 
 const MaxReadBytes = 64 * 1024
 
-var containerName = regexp.MustCompile(`^exocortex-[a-z0-9][a-z0-9_-]{0,79}$`)
+var containerName = regexp.MustCompile(`^(?:exocortex-[a-z0-9][a-z0-9_-]{0,79}|vault-prod-(?:api|worker|web|postgres|migrate)-[1-9][0-9]{0,3})$`)
+
+// ManagedContainerName is shared by the MCP inventory and the operator's
+// bounded diagnostic commands. Neither path accepts arbitrary Docker targets.
+func ManagedContainerName(name string) bool { return containerName.MatchString(name) }
+
 var testName = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,39}-[0-9]{8}T[0-9]{6}-[0-9a-f]{8}$`)
 var sensitive = regexp.MustCompile(`(?i)(authorization|bearer|api[_-]?key|access[_-]?key|secret|password|passwd|token|cookie|session[_-]?id|private[_-]?key|credential|BEGIN [A-Z ]*PRIVATE KEY)`)
 var ansiSequence = regexp.MustCompile(`\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07\x1b]*(?:\x07|\x1b\\))`)
@@ -132,7 +137,7 @@ func (r Reader) Sources(ctx context.Context) ([]Source, error) {
 	seen := map[string]bool{}
 	for _, name := range strings.Split(string(data), "\n") {
 		name = strings.TrimSpace(name)
-		if !containerName.MatchString(name) || seen[name] {
+		if !ManagedContainerName(name) || seen[name] {
 			continue
 		}
 		seen[name] = true

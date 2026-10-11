@@ -1,7 +1,7 @@
 # Window
 
 Window is a shared Linux host diagnostic agent managed by Updater. This source
-requires Updater 0.6.12 or newer for its restricted operator TUI.
+requires Updater 0.6.17 or newer for its restricted operator TUI.
 It has no application-service consumer edges. Codex runs only on the
 development PC and connects through the host's existing SSH port. Window
 does not listen on a TCP port and gives the SSH account no Docker socket.
@@ -41,7 +41,8 @@ separate and accepts only the paired MCP key.
    Window's five read-only MCP tools over its **own** SSH connection.
 3. Choose Start observed operator shell to mirror echoed commands and output.
    The agent polls `window_live_events` during an active Codex turn; it cannot
-   type into the shell. Exit the shell to stop the live feed.
+   type into the shell. Exit the shell to stop the live feed. In that shell,
+   use the bounded diagnostic commands below for Updater and Docker state.
 4. Run `sudo window capture-test smoke -- COMMAND [ARG...]` from that shell to
    save a bounded result under Window's test sources. The command executes as
    the original, unprivileged sudo user. Window does not run tests on an MCP
@@ -64,8 +65,9 @@ an explicit authorization denial requires correcting the Kernel principal.
 
 ## Read boundary
 
-`window_sources` lists a fixed set of systemd units, containers whose names
-start with `exocortex-`, and up to 20 retained test results. `window_logs`
+`window_sources` lists a fixed set of systemd units, `exocortex-*` containers,
+the `vault-prod` API, worker, web, PostgreSQL and migration containers, and up
+to 20 retained test results. `window_logs`
 reads one bounded source. `window_updater_jobs` reads the existing sanitized
 Updater operator summary. `window_live_events` reads up to 100 buffered events
 per call. `window_storage` reports root filesystem space, the current syslog
@@ -84,6 +86,36 @@ terminal control sequences. This is **heuristic**: unknown secret formats in
 existing producer logs or live shell output can still be exposed while the
 grant is open. Treat an active grant as permission to read all registered
 diagnostic sources. Avoid entering credentials in the observed shell.
+
+## Observed shell diagnostics
+
+Run the following commands as `windowops` in the observed shell. They require
+an active observed shell and timed Window grant. Output is buffered, filtered
+and limited; a grant revoked while the command runs suppresses its result. The
+operator chooses each command, and the agent remains a spectator.
+
+```sh
+sudo /usr/local/bin/window diagnose jobs saturn
+sudo /usr/local/bin/window diagnose containers vault-prod
+sudo /usr/local/bin/window diagnose logs vault-prod-worker-1 100
+sudo /usr/local/bin/window diagnose inspect vault-prod-api-1 vault-prod-worker-1 vault-prod-web-1
+sudo /usr/local/bin/window diagnose migrations
+```
+
+`jobs` reads up to 100 sanitized Updater summaries and optionally filters by
+head/component. `containers` lists the name and status of permitted containers;
+the optional selector is `exocortex` or `vault-prod`. `logs` reads up to 200
+timestamped lines from the last 24 hours. `inspect` shows only container name,
+image, state and error for up to five named containers; it never prints the
+environment. `migrations` runs fixed read-only queries against the
+`vault-prod-postgres-1` container to show the last three migration names and
+whether the Saturn restore guard exists. These commands do not accept arbitrary
+Docker flags, executable names, SQL or host paths. There is no general
+`sudo docker` permission for `windowops`.
+
+On an existing host, update Updater first so its installer writes the new
+`windowops` sudoers entry, then update Window so the diagnostic subcommand is
+present. A Window binary update alone does not change sudoers.
 
 ## Release and installation
 
@@ -107,6 +139,16 @@ asset digests, minimum Updater version and running Window health before
 accepting installation or update. Failed activation restores the previous
 binary and unit. If an update is interrupted, TUI Repair restores the prior
 version from `.previous`. Pairing survives a successful update; a grant does not.
+
+For host loss, Updater's full root TUI supports an independent `Window recovery`
+pipeline in Saturn. Its encrypted archive restores only the public PC pairing,
+including an explicitly unpaired snapshot, and verifies that Window access is
+closed. Export the independent recovery key off-host. The restricted
+`windowops` console cannot import archives or export keys. Audit/test results,
+active grants, live output and SSH operator credentials are excluded. Trusted
+installation precedes restore; re-open diagnostic access manually after
+reviewing the restored pairing. This extension is locally qualified and needs
+an Updater release containing the new scope before production use.
 
 For a local rehearsal, supply a protected RSA key outside the repository and
 the exact, previously published Updater bootstrap. The release workflow uses

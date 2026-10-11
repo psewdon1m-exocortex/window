@@ -21,9 +21,9 @@ release URLs. A firewall or proxy failure here blocks installation; retry only
 after the network path is fixed. Use a release-specific `window-bootstrap.sh`
 asset, never a file from `main` or `latest`.
 
-The host must run published Updater 0.6.12 or newer with the matching Window
+The host must run published Updater 0.6.17 or newer with the matching Window
 public release key pinned under `/etc/exocortex/release-trust/window.pem`.
-Window's release policy pins the verified Updater 0.6.12 bootstrap and install
+Window's release policy pins the verified Updater 0.6.17 bootstrap and install
 archive. If an older Updater
 is installed, update it through its own verified release path first. Do not copy
 a Window key directly into the host trust directory as a workaround.
@@ -52,6 +52,17 @@ unpaired or closed grant denies data reads. Pair the development PC through
 `sudo /usr/bin/updater tui -window`. Exercise `window_sources` and
 `window_updater_jobs` from Codex. Revoke it in the
 TUI and verify the next read is denied. No Codex agent runs on the host.
+
+For observed diagnostics, run `sudo /usr/local/bin/window diagnose jobs saturn`,
+`sudo window diagnose containers vault-prod`,
+`sudo window diagnose logs vault-prod-worker-1 100`,
+`sudo window diagnose inspect vault-prod-worker-1` and
+`sudo window diagnose migrations` in the observed `windowops` shell. Verify
+that `sudo /usr/local/bin/window diagnose logs unrelated-container` is denied,
+that `sudo docker ps` is still denied, and that `window diagnose` denies new reads
+after emergency revocation. Record only sanitized output.
+Update Updater before Window on an existing host: Updater installs the new
+sudoers entry, while Window supplies the diagnostic binary.
 
 For a failed install or update, inspect the specific Updater job and Window
 journal with timestamps, preserve the original error, then use TUI Repair. Do

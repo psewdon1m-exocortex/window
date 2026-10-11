@@ -73,6 +73,11 @@ ensure_windowops_password {shlex.quote(str(binary))} {shlex.quote(str(keys))}
 
 
 class BootstrapPasswordTests(unittest.TestCase):
+    def test_operator_sudoers_exposes_only_the_diagnostic_wrapper(self):
+        sudoers = next(line for line in SOURCE.splitlines() if "windowops ALL=(root)" in line)
+        self.assertIn("/usr/local/bin/window diagnose *", sudoers)
+        self.assertNotIn("/usr/bin/docker", sudoers)
+
     def test_password_gate_precedes_window_install(self):
         gate = SOURCE.index("\nensure_windowops_password /usr/local/bin/window /home/windowops/.ssh/authorized_keys")
         install = SOURCE.index("\n/usr/bin/updater window install --version")
